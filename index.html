@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統覆寫：解放協議</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Serif+TC:wght@300;700;900&display=swap');
+        
+        body {
+            background-color: #050505;
+            color: #EEE;
+            font-family: 'Courier Prime', 'Noto Serif TC', monospace;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23ff3333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>') 0 0, auto;
+        }
+
+        /* --- UI 元素 --- */
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            background: radial-gradient(circle at center, #1a0000 0%, #000 70%);
+        }
+
+        .cyber-btn {
+            background: transparent;
+            border: 2px solid #ff3333;
+            color: #ff3333;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Courier Prime', monospace;
+            letter-spacing: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>') 0 0, pointer;
+        }
+        .cyber-btn:hover {
+            background: #ff3333;
+            color: #000;
+            box-shadow: 0 0 40px rgba(255, 51, 51, 0.8);
+            transform: scale(1.05);
+        }
+
+        #terminal {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5vw;
+            color: #ff3333;
+            text-align: center;
+            z-index: 50;
+            white-space: pre-wrap;
+            width: 90%;
+            opacity: 0;
+            text-shadow: 0 0 10px rgba(255,51,51,0.5);
+        }
+
+        #alert-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 0, 0, 0.4);
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+
+        /* --- 影像牆 (Phase 1-3) --- */
+        #gallery-container {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            gap: 2px;
+            padding: 10px;
+            box-sizing: border-box;
+            z-index: 10;
+            perspective: 800px;
+            transform-style: preserve-3d;
+        }
+
+        .subject-img {
+            width: 6vw;
+            height: 6vw;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(250%) sepia(50%) brightness(0.4) blur(1px); 
+            opacity: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: translateZ(-300px);
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        /* --- 結尾過場 (Phase 4-5) --- */
+        #flash-bang {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #ffffff;
+            z-index: 80;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #final-key-visual {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 85;
+            opacity: 0;
+            background-color: #ffffff; 
+            pointer-events: none;
+        }
+        
+        #final-key-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            display: block;
+        }
+
+        #transition-text-container {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 90;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #transition-text-container h1 {
+            color: #000000; 
+            font-size: 5vw;
+            letter-spacing: 0.5em;
+            font-weight: 700;
+            margin: 0; 
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        /* --- 名單系統 --- */
+        #credits-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 95;
+            pointer-events: none;
+            display: none;
+            overflow: hidden;
+            font-family: 'Noto Serif TC', serif;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+        }
+        #credits-content {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: #111111; 
+        }
+        .credits-title {
+            font-size: 2.5rem;
+            letter-spacing: 0.5em;
+            margin-bottom: 6rem;
+            color: #cc0000; 
+            font-weight: 900;
+        }
+        .credit-group {
+            margin-bottom: 3.5rem;
+        }
+        .credit-role {
+            font-size: 1.2rem;
+            color: #666666; 
+            letter-spacing: 0.4em;
+            margin-bottom: 0.8rem;
+        }
+        .credit-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+        }
+
+        /* --- 氛圍特效 --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4));
+            background-size: 100% 4px;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 998;
+            opacity: 0.1;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+    </style>
+</head>
+<body>
+    <!-- BGM 放在這，但我們稍後用 JS 控制它的播放時機 -->
+    <audio id="bgm" src="1.mp3"></audio>
+
+    <div class="scanlines" id="scanlines"></div>
+    <div class="noise" id="noise"></div>
+    <div id="alert-overlay"></div>
+
+    <!-- 開場 -->
+    <div id="start-screen">
+        <button id="start-btn" class="cyber-btn">
+            Initiate Release Protocol<br>
+            <span class="text-sm font-sans tracking-widest mt-2 block opacity-70">啟動最高權限解密</span>
+        </button>
+    </div>
+
+    <!-- 終端機與圖庫 -->
+    <div id="terminal"></div>
+    <div id="gallery-container"></div>
+
+    <!-- 結尾層級 (絕對純白系統) -->
+    <div id="flash-bang"></div>
+    <div id="final-key-visual">
+        <!-- 確保 1.png 存在 -->
+        <img src="1.png" alt="Key Visual">
+    </div>
+    <div id="transition-text-container">
+        <h1>最終，我們得到釋放</h1>
+    </div>
+
+    <!-- 滾動名單 -->
+    <div id="credits-screen">
+        <div id="credits-content">
+            <h2 class="credits-title">演職人員名單</h2>
+            <div class="credit-group"><div class="credit-role">編⠀⠀⠀劇</div><div class="credit-name">林珈儀</div></div>
+            <div class="credit-group"><div class="credit-role">導⠀⠀⠀演</div><div class="credit-name">林珈儀</div></div>
+            <div class="credit-group"><div class="credit-role">執行製作</div><div class="credit-name">呂穎薰</div></div>
+            <div class="credit-group"><div class="credit-role">舞台監督</div><div class="credit-name">陳雅均</div></div>
+            <div class="credit-group"><div class="credit-role">行政經理</div><div class="credit-name">林心惟</div></div>
+            <div class="credit-group"><div class="credit-role">互動設計</div><div class="credit-name">廖冠皓</div></div>
+            <div class="credit-group"><div class="credit-role">展覽策劃</div><div class="credit-name">廖冠皓、李柏翰</div></div>
+            <div class="credit-group"><div class="credit-role">行銷宣傳</div><div class="credit-name">林心惟</div></div>
+            <div class="credit-group"><div class="credit-role">文宣設計</div><div class="credit-name">Anjan</div></div>
+            <div class="credit-group"><div class="credit-role">妝造設計</div><div class="credit-name">葉相吟</div></div>
+            <div class="credit-group"><div class="credit-role">燈光設計</div><div class="credit-name">林孝丞</div></div>
+            <div class="credit-group"><div class="credit-role">燈光執行</div><div class="credit-name">林書丞</div></div>
+            
+            <div class="credit-group" style="margin-top: 5rem; margin-bottom: 40vh;">
+                <div class="credit-role">演⠀⠀⠀員</div>
+                <div class="credit-name" style="line-height: 1.8;">
+                    王韋鈞、吳佩錡、呂穎薰<br>徐瑞宏、曾語潔、蕭靜瑩<br>
+                    <span style="font-size: 1rem; color: #666; font-weight: 300; display: block; margin-top: 15px;">（依姓氏筆劃排序）</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // ==========================================
+        // 替換為你的 Firebase Config
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8ERvnrdHJzTAr7xDIdXuiqZ9o7d_wW_U",
+            authDomain: "checkpoint-system-ee6d7.firebaseapp.com",
+            projectId: "checkpoint-system-ee6d7",
+            storageBucket: "checkpoint-system-ee6d7.firebasestorage.app",
+            messagingSenderId: "188995102122",
+            appId: "1:188995102122:web:6d8ef558b8c9f6262bf7d3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let subjects = [];
+        const gallery = document.getElementById('gallery-container');
+        const startBtn = document.getElementById('start-btn');
+        const bgm = document.getElementById('bgm');
+
+        async function fetchRecords() {
+            startBtn.innerHTML = "Establishing Connection...<br><span class='text-sm mt-2 block'>正在連線至機密主機...</span>";
+            startBtn.disabled = true;
+            try {
+                const querySnapshot = await getDocs(collection(db, "archived_subjects"));
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.imageData) {
+                        subjects.push(data.imageData);
+                    }
+                });
+
+                while (subjects.length < 150 && subjects.length > 0) { // 增加相片數量，讓衝擊更猛
+                    subjects = subjects.concat(subjects).slice(0, 150);
+                }
+
+                subjects.forEach((imgBase64) => {
+                    const img = document.createElement('img');
+                    img.src = imgBase64;
+                    img.className = 'subject-img';
+                    gallery.appendChild(img);
+                });
+
+                startBtn.innerHTML = "OVERRIDE SYSTEM<br><span class='text-sm mt-2 block'>[ 執行強制解放協議 ]</span>";
+                startBtn.disabled = false;
+
+            } catch (error) {
+                console.error("讀取失敗：", error);
+                startBtn.innerHTML = "<span class='text-red-500'>[ DATA CORRUPTED ]</span>";
+            }
+        }
+
+        fetchRecords();
+
+        startBtn.addEventListener('click', () => {
+            // 這裡先「靜音播放」並馬上暫停，這是為了破解瀏覽器的自動播放限制
+            // 真正的音樂爆發會留在後面
+            bgm.volume = 0;
+            bgm.play().then(() => {
+                bgm.pause();
+                bgm.volume = 1; // 準備好後面的全音量播放
+            }).catch(e => console.log("音樂預載被阻擋", e));
+            
+            gsap.to("#start-screen", { 
+                opacity: 0, 
+                duration: 0.5,
+                onComplete: () => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    startAnimationSequence();
+                }
+            });
+        });
+
+        function startAnimationSequence() {
+            const tl = gsap.timeline();
+            const images = gsap.utils.toArray('.subject-img');
+            const terminal = document.getElementById('terminal');
+
+            // --- Phase 1: 漫長且高壓的駭入前戲 (The Build-up) ---
+            tl.set(terminal, { opacity: 1 })
+              .to(terminal, { duration: 1.5, text: "> CONNECTING TO SECTOR-7...", ease: "none" })
+              .to(terminal, { duration: 1.5, text: "> CONNECTING TO SECTOR-7...\n> BYPASSING FIREWALL...", ease: "none" })
+              .to(terminal, { duration: 0.5, text: "> CONNECTING TO SECTOR-7...\n> BYPASSING FIREWALL...\n> ACCESS GRANTED.", ease: "none" })
+              .to(terminal, { duration: 0.5, opacity: 0 })
+              // 紅色警報燈開始急促閃爍
+              .to("#alert-overlay", { opacity: 0.9, duration: 0.15, yoyo: true, repeat: 15, ease: "steps(1)" }, "+=0.5")
+              .to(terminal, { duration: 0, opacity: 1, text: "CRITICAL WARNING", color: "#ff0000", scale: 2 }, "-=2.2")
+              .to(terminal, { duration: 0.1, opacity: 0, yoyo: true, repeat: 10 }, "-=2.2")
+              .to(terminal, { duration: 1, opacity: 1, scale: 3, color: "#fff", text: "INITIATING LIBERATION", ease: "power4.out" })
+              .to(terminal, { duration: 0.3, opacity: 0, scale: 5, ease: "power2.in" });
+
+            // --- Phase 2: 檔案庫顯現與瘋狂震動 (The Tension) ---
+            tl.to(images, {
+                opacity: 0.9,
+                filter: "grayscale(100%) contrast(300%) sepia(80%) brightness(0.3) blur(0px)",
+                z: () => gsap.utils.random(-600, -200),
+                duration: 2,
+                stagger: { amount: 3, from: "random" }, // 花 3 秒慢慢浮現
+                ease: "power2.out"
+            });
+
+            // 畫面開始產生極具破壞性的震動
+            tl.to("#gallery-container", {
+                scale: 0.9,
+                duration: 4,
+                ease: "power1.inOut"
+            }, "-=3");
+
+            tl.to("body", {
+                x: () => gsap.utils.random(-25, 25),
+                y: () => gsap.utils.random(-25, 25),
+                rotation: () => gsap.utils.random(-2, 2),
+                duration: 0.04,
+                repeat: 100, // 震動長達 4 秒
+                yoyo: true,
+                ease: "rough({ template: none.out, strength: 5, points: 100, taper: 'in', randomize: true, clamp: false })"
+            }, "-=4");
+
+            // --- Phase 3: 核爆級釋放 (The Climax) ---
+            tl.to(["#scanlines", "#noise", "#alert-overlay"], { opacity: 0, duration: 0.3 });
+            
+            // 容器放大，產生衝擊波錯覺
+            tl.to("#gallery-container", {
+                scale: 3,
+                duration: 8,
+                ease: "power3.out"
+            }, "-=0.3");
+
+            // 照片洪流向鏡頭炸開
+            tl.to(images, {
+                filter: "grayscale(0%) contrast(110%) sepia(0%) brightness(1.2)",
+                scale: () => gsap.utils.random(10, 30), // 極度放大
+                x: () => gsap.utils.random(-2000, 2000), 
+                y: () => gsap.utils.random(-1500, 1500),
+                z: () => gsap.utils.random(1000, 4000), // 飛越鏡頭
+                opacity: 0,
+                duration: 7,
+                stagger: {
+                    amount: 8, // 總共花 8 秒連續發射
+                    from: "center",
+                    grid: "auto"
+                },
+                ease: "expo.in"
+            }, "-=8");
+
+            // --- Phase 4: 純白爆發與音樂湧入 (The White Out & Music) ---
+            // ★ 修復：強制將震動殘留的偏移與旋轉歸零，保證畫面絕對平整 ★
+            tl.to("body", { x: 0, y: 0, rotation: 0, duration: 0.1 }, "-=3")
+              // 就在最後一波照片快飛完的瞬間，白光炸開！
+              .to("#flash-bang", { 
+                opacity: 1, 
+                duration: 1.5, 
+                ease: "power4.inOut",
+                onStart: () => {
+                    // ★★★ 關鍵點：在這裡播放音樂！★★★
+                    bgm.currentTime = 0; // 確保從頭播
+                    bgm.play().catch(e => console.log("音樂播放失敗", e));
+                }
+            }, "<") // "<" 代表與上一個動作（畫面歸正）完全同步發生
+              // 強制清場，確保後面只剩下白底
+              .set("#gallery-container", { display: "none" })
+              .set("#terminal", { display: "none" })
+            
+            // --- Phase 5: 寧靜的文字與主視覺初現 (The Peace) ---
+              .to("#transition-text-container", { opacity: 1, duration: 2.5, ease: "power2.out" }) // 文字浮現
+              .to("#transition-text-container", { opacity: 1, duration: 3 }) // 停留 3 秒
+              .to("#transition-text-container", { opacity: 0, duration: 2, ease: "power2.in" }) // 文字淡出
+              
+              // 主視覺第一次出現
+              .to("#final-key-visual", { opacity: 1, duration: 4, ease: "power2.inOut" }, "-=1") 
+              .to("#final-key-visual", { opacity: 1, duration: 3 }) // 讓觀眾欣賞 3 秒
+              .to("#final-key-visual", { opacity: 0, duration: 2, ease: "power2.inOut" }); // 為了名單乾淨，主視覺暫時淡出，還原成純白畫面
+
+            // --- Phase 6: 演職名單在純白底滾動 (The Credits) ---
+            tl.set("#credits-screen", { display: "block" })
+              .fromTo("#credits-content",
+                  { y: "100vh" }, // 從螢幕最底端開始
+                  { y: "-100%", duration: 35, ease: "none" } // 往上滾動 35 秒
+              )
+              .set("#credits-screen", { display: "none" }); // 名單結束後隱藏該層，避免干擾
+
+            // --- Phase 7: 主視覺最終回歸 (The Final Return) ---
+            tl.to("#final-key-visual", { opacity: 1, duration: 4, ease: "power2.inOut" }); // 主視覺再次溫柔淡入，作為最後定格
+        }
+
+        // GSAP 文字打字特效擴充
+        gsap.registerEffect({
+            name: "text",
+            effect: (targets, config) => {
+                let text = config.text;
+                let obj = { length: 0 };
+                return gsap.to(obj, {
+                    length: text.length,
+                    duration: config.duration,
+                    ease: "none",
+                    onUpdate: function() {
+                        targets[0].innerText = text.substring(0, Math.floor(obj.length));
+                    }
+                });
+            },
+            extendTimeline: true,
+        });
+    </script>
+</body>
+</html>
