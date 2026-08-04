@@ -100,6 +100,7 @@
             border: 1px solid rgba(255,255,255,0.1);
             transform: translateZ(-300px);
             box-shadow: inset 0 0 10px #000;
+            will-change: transform, opacity; /* ★ 效能優化 1：提前告訴瀏覽器這些屬性會改變，強制獨立分層 */
         }
 
         /* --- 結尾過場 (Phase 4-5) --- */
@@ -396,13 +397,14 @@
 
             // 照片洪流向鏡頭炸開
             tl.to(images, {
-                filter: "grayscale(0%) contrast(110%) sepia(0%) brightness(1.2)",
+                // ★ 效能優化 2：移除了原本這裡非常耗能的 filter 動畫
                 scale: () => gsap.utils.random(10, 30), 
                 x: () => gsap.utils.random(-2000, 2000), 
                 y: () => gsap.utils.random(-1500, 1500),
                 z: () => gsap.utils.random(1000, 4000),
                 opacity: 0,
                 duration: 12, // 單張照片飛行 12 秒
+                force3D: true, // ★ 效能優化 3：強制 GSAP 使用 GPU 進行 3D 運算
                 stagger: {
                     amount: 14, // 全部發射完畢需要 14 秒 (總計 26 秒)
                     from: "center",
