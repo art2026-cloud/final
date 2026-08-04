@@ -406,7 +406,7 @@
             // 容器放大，產生衝擊波錯覺
             tl.to("#gallery-container", {
                 scale: 3,
-                duration: 8,
+                duration: 12,
                 ease: "power3.out"
             }, "-=0.3");
 
@@ -418,14 +418,14 @@
                 y: () => gsap.utils.random(-1500, 1500),
                 z: () => gsap.utils.random(1000, 4000), // 飛越鏡頭
                 opacity: 0,
-                duration: 7,
+                duration: 12,
                 stagger: {
-                    amount: 8, // 總共花 8 秒連續發射
+                    amount: 14, // 總共花 8 秒連續發射
                     from: "center",
                     grid: "auto"
                 },
-                ease: "expo.in"
-            }, "-=8");
+                ease: "power2.in"
+            }, "-=12");
 
             // --- Phase 4: 純白爆發與音樂湧入 (The White Out & Music) ---
             // ★ 修復：強制將震動殘留的偏移與旋轉歸零，保證畫面絕對平整 ★
