@@ -388,29 +388,30 @@
             // --- Phase 3: 核爆級釋放 (The Climax) - 已調慢至 26 秒 ---
             tl.to(["#scanlines", "#noise", "#alert-overlay"], { opacity: 0, duration: 0.3 });
             
-            // 容器放大，產生衝擊波錯覺 (配合照片發射時間調為 12 秒)
+            // 容器放大，產生衝擊波錯覺 
             tl.to("#gallery-container", {
-                scale: 3,
+                scale: 1.5, // 縮小整體容器的衝擊倍率 (原本為 3)
                 duration: 12,
                 ease: "power3.out"
             }, "-=0.3");
 
             // 照片洪流向鏡頭炸開
             tl.to(images, {
-                // ★ 效能優化 2：移除了原本這裡非常耗能的 filter 動畫
-                scale: () => gsap.utils.random(10, 30), 
-                x: () => gsap.utils.random(-2000, 2000), 
-                y: () => gsap.utils.random(-1500, 1500),
-                z: () => gsap.utils.random(1000, 4000),
+                // ★ 改動：大幅縮小放大倍數，保留臉孔清晰度
+                scale: () => gsap.utils.random(1.5, 3.5), 
+                // ★ 改動：讓擴散範圍集中一點，避免照片太快飛離視野
+                x: () => gsap.utils.random(-1000, 1000), 
+                y: () => gsap.utils.random(-800, 800),
+                z: () => gsap.utils.random(600, 1500),
                 opacity: 0,
                 duration: 12, // 單張照片飛行 12 秒
-                force3D: true, // ★ 效能優化 3：強制 GSAP 使用 GPU 進行 3D 運算
+                force3D: true, // 強制 GPU 運算
                 stagger: {
-                    amount: 14, // 全部發射完畢需要 14 秒 (總計 26 秒)
+                    amount: 14, // 全部發射完畢需要 14 秒
                     from: "center",
                     grid: "auto"
                 },
-                ease: "power2.in" // 更平滑的加速度，讓穿梭感更均勻
+                ease: "power2.in" 
             }, "-=12");
 
             // --- Phase 4: 純白爆發 (The White Out) ---
