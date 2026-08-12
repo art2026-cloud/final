@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系統覆寫：解放協議</title>
+    <title>系統覆寫：解放協議 (Light Mode)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Serif+TC:wght@300;700;900&display=swap');
         
         body {
-            background-color: #050505;
-            color: #EEE;
+            /* 改為白色背景與深色文字 */
+            background-color: #ffffff;
+            color: #111111;
             font-family: 'Courier Prime', 'Noto Serif TC', monospace;
             overflow: hidden;
             margin: 0;
             padding: 0;
+            /* 預設游標保持紅色 */
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23ff3333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>') 0 0, auto;
         }
 
@@ -27,11 +29,12 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
-            background: radial-gradient(circle at center, #1a0000 0%, #000 70%);
+            /* 改為非常淺的灰色漸層，避免純白的刺眼感 */
+            background: radial-gradient(circle at center, #ffffff 0%, #eaeaea 100%);
         }
 
         .cyber-btn {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.8);
             border: 2px solid #ff3333;
             color: #ff3333;
             padding: 15px 40px;
@@ -41,13 +44,14 @@
             cursor: pointer;
             text-transform: uppercase;
             transition: all 0.3s;
-            box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>') 0 0, pointer;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.1);
+            /* hover游標改為黑色，因為背景是白色 */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>') 0 0, pointer;
         }
         .cyber-btn:hover {
             background: #ff3333;
-            color: #000;
-            box-shadow: 0 0 40px rgba(255, 51, 51, 0.8);
+            color: #ffffff;
+            box-shadow: 0 0 30px rgba(255, 51, 51, 0.5);
             transform: scale(1.05);
         }
 
@@ -62,17 +66,20 @@
             white-space: pre-wrap;
             width: 90%;
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255,51,51,0.5);
+            font-weight: bold;
+            /* 減少白底上的文字陰影 */
+            text-shadow: 0 0 5px rgba(255,51,51,0.3);
         }
 
         #alert-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(255, 0, 0, 0.4);
+            /* 在白底上，紅色遮罩需要調整混合模式與透明度 */
+            background: rgba(255, 0, 0, 0.15);
             z-index: 40;
             opacity: 0;
             pointer-events: none;
-            mix-blend-mode: overlay;
+            mix-blend-mode: multiply;
         }
 
         /* --- 影像牆 (Phase 1-3) --- */
@@ -95,12 +102,13 @@
             width: 6vw;
             height: 6vw;
             object-fit: cover;
+            /* 恢復原本暗黑強烈的濾鏡 */
             filter: grayscale(100%) contrast(250%) sepia(50%) brightness(0.4) blur(1px); 
             opacity: 0;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
             transform: translateZ(-300px);
-            box-shadow: inset 0 0 10px #000;
-            will-change: transform, opacity; /* ★ 效能優化 1：提前告訴瀏覽器這些屬性會改變，強制獨立分層 */
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            will-change: transform, opacity, filter; 
         }
 
         /* --- 結尾過場 (Phase 4-5) --- */
@@ -193,7 +201,8 @@
         .scanlines {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4));
+            /* 掃描線改為非常淺的灰色，避免畫面變髒 */
+            background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0) 50%, rgba(0,0,0,0.03) 50%, rgba(0,0,0,0.03));
             background-size: 100% 4px;
             z-index: 999;
             pointer-events: none;
@@ -205,13 +214,13 @@
             top: 0; left: 0; width: 100vw; height: 100vh;
             pointer-events: none;
             z-index: 998;
-            opacity: 0.1;
+            /* 雜訊透明度降低 */
+            opacity: 0.05;
             background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
         }
     </style>
 </head>
 <body>
-    <!-- 更新為剛剛合成的 26 秒音效檔 (如果還是想用 1.mp3，可自行改回) -->
     <audio id="bgm" src="1.mp3" loop></audio>
 
     <div class="scanlines" id="scanlines"></div>
@@ -233,8 +242,7 @@
     <!-- 結尾層級 (絕對純白系統) -->
     <div id="flash-bang"></div>
     <div id="final-key-visual">
-        <!-- 確保 1.png 存在 -->
-        <img src="1.png" alt="Key Visual">
+        <img src="1.png" alt="Key Visual" onerror="this.src='https://placehold.co/1920x1080/ffffff/000000?text=Key+Visual'">
     </div>
     <div id="transition-text-container">
         <h1>最終 我們得到釋放</h1>
@@ -290,9 +298,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ==========================================
-        // 替換為你的 Firebase Config
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyD8ERvnrdHJzTAr7xDIdXuiqZ9o7d_wW_U",
             authDomain: "checkpoint-system-ee6d7.firebaseapp.com",
@@ -345,7 +350,6 @@
         fetchRecords();
 
         startBtn.addEventListener('click', () => {
-            // 點擊按鈕時直接以全音量開始播放音樂
             bgm.volume = 1;
             bgm.play().catch(e => console.log("音樂播放失敗", e));
             
@@ -364,22 +368,23 @@
             const images = gsap.utils.toArray('.subject-img');
             const terminal = document.getElementById('terminal');
 
-            // --- Phase 1: 漫長且高壓的駭入前戲 (The Build-up) ---
+            // --- Phase 1: 漫長且高壓的駭入前戲 ---
             tl.set(terminal, { opacity: 1 })
               .to(terminal, { duration: 1.5, text: "> CONNECTING TO SECTOR-7...", ease: "none" })
               .to(terminal, { duration: 1.5, text: "> CONNECTING TO SECTOR-7...\n> BYPASSING FIREWALL...", ease: "none" })
               .to(terminal, { duration: 0.5, text: "> CONNECTING TO SECTOR-7...\n> BYPASSING FIREWALL...\n> ACCESS GRANTED.", ease: "none" })
               .to(terminal, { duration: 0.5, opacity: 0 })
-              // 紅色警報燈開始急促閃爍
-              .to("#alert-overlay", { opacity: 0.9, duration: 0.15, yoyo: true, repeat: 15, ease: "steps(1)" }, "+=0.5")
+              .to("#alert-overlay", { opacity: 0.8, duration: 0.15, yoyo: true, repeat: 15, ease: "steps(1)" }, "+=0.5")
               .to(terminal, { duration: 0, opacity: 1, text: "CRITICAL WARNING", color: "#ff0000", scale: 2 }, "-=2.2")
               .to(terminal, { duration: 0.1, opacity: 0, yoyo: true, repeat: 10 }, "-=2.2")
-              .to(terminal, { duration: 1, opacity: 1, scale: 3, color: "#fff", text: "INITIATING LIBERATION", ease: "power4.out" })
+              // ★ 重要修正：背景是白色，所以這段爆發的文字必須改為黑色 (#000000)，否則會看不見
+              .to(terminal, { duration: 1, opacity: 1, scale: 3, color: "#000000", text: "INITIATING LIBERATION", ease: "power4.out" })
               .to(terminal, { duration: 0.3, opacity: 0, scale: 5, ease: "power2.in" });
 
-            // --- Phase 2: 檔案庫顯現與瘋狂震動 (The Tension) ---
+            // --- Phase 2: 檔案庫顯現與瘋狂震動 ---
             tl.to(images, {
                 opacity: 0.9,
+                /* 恢復原本 GSAP 動畫中的濾鏡設定 */
                 filter: "grayscale(100%) contrast(300%) sepia(80%) brightness(0.3) blur(0px)",
                 z: () => gsap.utils.random(-600, -200),
                 duration: 2,
@@ -387,7 +392,6 @@
                 ease: "power2.out"
             });
 
-            // 畫面開始產生極具破壞性的震動
             tl.to("#gallery-container", {
                 scale: 0.9,
                 duration: 4,
@@ -399,64 +403,56 @@
                 y: () => gsap.utils.random(-25, 25),
                 rotation: () => gsap.utils.random(-2, 2),
                 duration: 0.04,
-                repeat: 100, // 震動長達 4 秒
+                repeat: 100, 
                 yoyo: true,
                 ease: "rough({ template: none.out, strength: 5, points: 100, taper: 'in', randomize: true, clamp: false })"
             }, "-=4");
 
-            // --- Phase 3: 核爆級釋放 (The Climax) - 已調慢至 26 秒 ---
+            // --- Phase 3: 核爆級釋放 ---
             tl.to(["#scanlines", "#noise", "#alert-overlay"], { opacity: 0, duration: 0.3 });
             
-            // 容器放大，產生衝擊波錯覺 
             tl.to("#gallery-container", {
-                scale: 1.5, // 縮小整體容器的衝擊倍率 (原本為 3)
+                scale: 1.5, 
                 duration: 12,
                 ease: "power3.out"
             }, "-=0.3");
 
-            // 照片洪流向鏡頭炸開
             tl.to(images, {
-                // ★ 改動：大幅縮小放大倍數，保留臉孔清晰度
                 scale: () => gsap.utils.random(1.5, 3.5), 
-                // ★ 改動：讓擴散範圍集中一點，避免照片太快飛離視野
                 x: () => gsap.utils.random(-1000, 1000), 
                 y: () => gsap.utils.random(-800, 800),
                 z: () => gsap.utils.random(600, 1500),
                 opacity: 0,
-                duration: 12, // 單張照片飛行 12 秒
-                force3D: true, // 強制 GPU 運算
+                duration: 12, 
+                force3D: true, 
                 stagger: {
-                    amount: 14, // 全部發射完畢需要 14 秒
+                    amount: 14, 
                     from: "center",
                     grid: "auto"
                 },
                 ease: "power2.in" 
             }, "-=12");
 
-            // --- Phase 4: 純白爆發 (The White Out) ---
-            // ★ 修復：強制將震動殘留的偏移與旋轉歸零，保證畫面絕對平整 ★
+            // --- Phase 4: 純白爆發 (白底版本這裡主要作為過場清理) ---
             tl.to("body", { x: 0, y: 0, rotation: 0, duration: 0.1 }, "-=3")
-              // 就在最後一波照片快飛完的瞬間，白光炸開！(已移除這邊的音樂播放，因為改到按鈕按下了)
               .to("#flash-bang", { 
                 opacity: 1, 
                 duration: 1.5, 
                 ease: "power4.inOut"
-            }, "<") // "<" 代表與上一個動作（畫面歸正）完全同步發生
-              // 強制清場，確保後面只剩下白底
+            }, "<") 
               .set("#gallery-container", { display: "none" })
               .set("#terminal", { display: "none" })
             
-            // --- Phase 5: 寧靜的文字與主視覺初現 (The Peace) ---
+            // --- Phase 5: 寧靜的文字與主視覺初現 ---
               .to("#transition-text-container", { opacity: 1, duration: 2.5, ease: "power2.out" }) 
               .to("#transition-text-container", { opacity: 1, duration: 3 }) 
               .to("#transition-text-container", { opacity: 0, duration: 2, ease: "power2.in" }) 
               
-              // 主視覺第一次出現
               .to("#final-key-visual", { opacity: 1, duration: 4, ease: "power2.inOut" }, "-=1") 
               .to("#final-key-visual", { opacity: 1, duration: 3 }) 
               .to("#final-key-visual", { opacity: 0, duration: 2, ease: "power2.inOut" }); 
 
-            // --- Phase 6: 演職名單在純白底滾動 (The Credits) ---
+            // --- Phase 6: 演職名單在純白底滾動 ---
             tl.set("#credits-screen", { display: "block" })
               .fromTo("#credits-content",
                   { y: "100vh" }, 
@@ -464,7 +460,7 @@
               )
               .set("#credits-screen", { display: "none" }); 
 
-            // --- Phase 7: 主視覺最終回歸 (The Final Return) ---
+            // --- Phase 7: 主視覺最終回歸 ---
             tl.to("#final-key-visual", { opacity: 1, duration: 4, ease: "power2.inOut" }); 
         }
 
