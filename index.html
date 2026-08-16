@@ -352,8 +352,13 @@
         fetchRecords();
 
         startBtn.addEventListener('click', () => {
-            bgm.volume = 1;
+            // [新增修改]: 音樂漸入效果
+            bgm.volume = 0; // 1. 先將音量降至 0
             bgm.play().catch(e => console.log("音樂播放失敗", e));
+            
+            // 2. 利用 GSAP 在 5 秒內將音量平滑漸增至 1 (最高音量)
+            // 可以隨意更改 duration 來決定漸入的速度
+            gsap.to(bgm, { volume: 1, duration: 5, ease: "power1.inOut" });
             
             gsap.to("#start-screen", { 
                 opacity: 0, 
